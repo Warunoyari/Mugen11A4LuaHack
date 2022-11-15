@@ -7,7 +7,7 @@ How to Import:
 Put StreamElua, StreamElua2, and LoadLua11A4.bin in your character folder  
 Copy/Paste or Merge Supernull with existing Supernull folders (This uses my edits with Label Pointers for ASM file editing)  
 Must be same location as Def file (No guarantees if you place DEF file in weird location.)  
-LoadLua11A4.asm is for source code and is not necessary.  
+LoadLua11A4.asm and LuaDoFile are for source code thus not required.
 
 StreamElua sets up the code to run StreamElua2  
 This file is for setting up the info pointer required to use LuaFile and also for custom code  
