@@ -28,8 +28,6 @@ mugen.log("\n\nProcessing exploit script in " .. EXPLOIT_FILENAME .. '...\n')
 
   -- Character Info String Pointer
   -- lua-based additional payload: add a lua-executing function to DisplayToClipboard
-  luaLoadingFunctionAddress = -1;
-
   -- allocate space for the character folder string
   CharacterInfoPointer = mll.ReadInteger(mugen.getbaseaddress() + 0xA78)
   local characterFolderString = mll.VirtualAlloc(0x2000, 0x40)
