@@ -4,6 +4,7 @@ A custom exe hack for Mugen 1.1A4 to achieve higher stability, it no longer depe
 
 How to Import:
 Put StreamElua, StreamElua2, and LoadLua11A4.bin in your character folder
+
 Merge Supernull with existing Supernull folders (This uses my edits with Label Pointers for ASM file editing)
 Must be same location as Def file (No guarantees if you place DEF file in weird location.)
 LoadLua11A4.asm is for source code and is not necessary.
