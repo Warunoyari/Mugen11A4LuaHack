@@ -16,6 +16,10 @@ function bootstrap()
 
 mugen.log("\n\nProcessing exploit script in " .. EXPLOIT_FILENAME .. '...\n')
 
+
+-- Process to assign Character Path for LuaFile/DisplayToClipboard?
+-- Must be in this file as File 1 allocates the assembly file to calculate it.
+
   -- get folder containing this elua file
   local sourcefile = debug.getinfo(1, "S").source
   local sourcefolder = string.sub(sourcefile, 2, string.len(sourcefile) - string.len(EXPLOIT_FILENAME))
@@ -33,118 +37,13 @@ mugen.log("\n\nProcessing exploit script in " .. EXPLOIT_FILENAME .. '...\n')
   mll.WriteInteger(CharacterInfoPointer + 0xB0, tonumber(characterFolderString))
   mugen.log(string.format("Character info structure pointer discovered at 0x%08x.\n", tonumber(CharacterInfoPointer)))
 
-  luaLoadingFunctionAddress = mll.MemoryMapFile(sourcefolder .. EXPLOIT_FUNCTION_FOLDER .. "11a4/lualoader.bin", 0x2000, 0x40)  
-    
-  -- Check if mapped successfully
-  if luaLoadingFunctionAddress == 0
-    then
-    mugen.log("Failed to map lualoader.bin")
-      os.exit(-1)
-    end    
-  mugen.log(string.format("Lua loading function is loaded into memory at 0x%08x.\n\n", tonumber(luaLoadingFunctionAddress)))
-
-  -- write the call to our loaded lua-executing payload
-  -- +8 to skip over pointers
-
-  JumpDistance = luaLoadingFunctionAddress + 8 - 0x0044B7AA - 5
-  mll.WriteByte(0x0044B7AA, 0xE8)
-  mll.WriteInteger(0x0044B7AB, JumpDistance)
-  mll.WriteByte(0x0044B7AF, 0x90)            
-
-  -- Get Pointer for each Data Type
-  AddressListPointer = mll.ReadInteger(luaLoadingFunctionAddress) + luaLoadingFunctionAddress
-  StringListPointer = mll.ReadInteger(luaLoadingFunctionAddress + 4) + luaLoadingFunctionAddress
-    
-  -- Get Addresses to Rewrite Strings
-  CharacterID_WriteLoc = mll.ReadInteger(AddressListPointer) + luaLoadingFunctionAddress
-  ErrorMessage_WriteLoc = mll.ReadInteger(AddressListPointer + 4) + luaLoadingFunctionAddress
-    
-  -- String Locations
-  CharacterID_StringLoc = mll.ReadInteger(StringListPointer) + luaLoadingFunctionAddress
-  ErrorMessage_StringLoc = mll.ReadInteger(StringListPointer + 4) + luaLoadingFunctionAddress
-    
-  -- CurrCharacterID (+1 for Push)
-  mll.WriteInteger(ErrorMessage_WriteLoc + 1, ErrorMessage_StringLoc)
-  -- Error message (+1 for Push)
-  mll.WriteInteger(CharacterID_WriteLoc + 1, CharacterID_StringLoc)     
-    
-  -- lua-based additional payload: add a lua-executing state controller
-  luaLoadingStateControllerAddress = -1;
-  luaRunningStateControllerAddress = -1;
-
-  luaLoadingStateControllerAddress = mll.MemoryMapFile(sourcefolder .. EXPLOIT_FUNCTION_FOLDER .. "11a4/luasctrl.bin", 0x2000, 0x40)
-  luaRunningStateControllerAddress = mll.MemoryMapFile(sourcefolder .. EXPLOIT_FUNCTION_FOLDER .. "11a4/luasctrlrun.bin", 0x2000, 0x40)
-
-    
-  if luaLoadingStateControllerAddress == 0
-    then
-      mugen.log("Failed to map luasctrl.bin")
-      os.exit(-1)
-    end
-  if luaRunningStateControllerAddress == 0 
-    then
-      mugen.log("Failed to map luasctrlrun.bin")
-      os.exit(-1)
-    end
-    
-    
-  mugen.log(string.format("Lua state controller loading function is loaded into memory at 0x%08x.\n", tonumber(luaLoadingStateControllerAddress)))
-  mugen.log(string.format("Lua state controller running function is loaded into memory at 0x%08x.\n\n", tonumber(luaRunningStateControllerAddress)))
    
-  -- write the call to our loaded lua-executing payload
-  -- +8 Pointer Distance
-  
-  JumpDistance = luaLoadingStateControllerAddress + 8 - 0x004480A5 - 5
-  mll.WriteByte(0x004480A5, 0xE9)
-  mll.WriteInteger(0x004480A6, JumpDistance)
-  mll.WriteByte(0x004480AA, 0x90)
-        
-  JumpDistance = luaRunningStateControllerAddress + 8 - 0x0044BBAD - 5
-  mll.WriteByte(0x0044BBAD, 0xE9)
-  mll.WriteInteger(0x0044BBAE, JumpDistance)
-   
-  -- Get Pointer for each Data Type
-  AddressListPointer = mll.ReadInteger(luaLoadingStateControllerAddress) + luaLoadingStateControllerAddress
-  StringListPointer = mll.ReadInteger(luaLoadingStateControllerAddress + 4) + luaLoadingStateControllerAddress
-    
-  -- Get Addresses to Rewrite Strings
-  LuaExec_WriteLoc = mll.ReadInteger(AddressListPointer) + luaLoadingStateControllerAddress
-  LuaFile_WriteLoc = mll.ReadInteger(AddressListPointer + 4) + luaLoadingStateControllerAddress
-  Lua_WriteLoc = mll.ReadInteger(AddressListPointer + 8) + luaLoadingStateControllerAddress
-  LuaError_WriteLoc = mll.ReadInteger(AddressListPointer + 12) + luaLoadingStateControllerAddress
-    
-  -- String Locations
-  LuaExec_StringLoc = mll.ReadInteger(StringListPointer    ) + luaLoadingStateControllerAddress
-  LuaFile_StringLoc = mll.ReadInteger(StringListPointer + 4) + luaLoadingStateControllerAddress
-  Lua_StringLoc =     mll.ReadInteger(StringListPointer + 8) + luaLoadingStateControllerAddress
-  LuaError_StringLoc= mll.ReadInteger(StringListPointer + 12) + luaLoadingStateControllerAddress
-    
-  -- +1 for Push    
-  mll.WriteInteger(LuaExec_WriteLoc + 1, LuaExec_StringLoc)
-  mll.WriteInteger(LuaFile_WriteLoc + 1, LuaFile_StringLoc)
-  mll.WriteInteger(Lua_WriteLoc + 1, Lua_StringLoc)
-  mll.WriteInteger(LuaError_WriteLoc + 1, LuaError_StringLoc)
-               
-  -- Get Pointer for each Data Type
-  AddressListPointer = mll.ReadInteger(luaRunningStateControllerAddress) + luaRunningStateControllerAddress
-  StringListPointer = mll.ReadInteger(luaRunningStateControllerAddress + 4) + luaRunningStateControllerAddress
-  
-  -- Get Addresses to Write Strings
-  CharacterID_WriteLoc = mll.ReadInteger(AddressListPointer) + luaRunningStateControllerAddress
-  ErrorMessage_WriteLoc = mll.ReadInteger(AddressListPointer + 4) + luaRunningStateControllerAddress
-        
-  -- Get String Addresses
-  CharacterID_StringLoc = mll.ReadInteger(StringListPointer) + luaRunningStateControllerAddress
-  ErrorMessage_StringLoc = mll.ReadInteger(StringListPointer + 4) + luaRunningStateControllerAddress
-        
-  -- CurrCharacterID (+1 for Push)
-  mll.WriteInteger(ErrorMessage_WriteLoc + 1, ErrorMessage_StringLoc)
-  -- Error message (+1 for Push)
-  mll.WriteInteger(CharacterID_WriteLoc + 1, CharacterID_StringLoc) 
 
 
 
-
+-- UNIQUE CODE FOR YOUR CHARACTER
+-- UNIQUE CODE FOR YOUR CHARACTER
+-- UNIQUE CODE FOR YOUR CHARACTER
 -- UNIQUE CODE FOR YOUR CHARACTER
 -- UNIQUE CODE FOR YOUR CHARACTER
 -- UNIQUE CODE FOR YOUR CHARACTER
@@ -152,6 +51,9 @@ mugen.log("Beginning execution of unique character code\n")
 
 
 
+
+
+-- END OF BOOTSTRAP
 end
 
 
