@@ -1,0 +1,157 @@
+[Padding Region]
+MUGEN1.1A4 - (MUGEN.EXE+11141D) - 0x51141D ~ 0x511FFC = 3039 bytes
+MUGEN1.1B1 - (MUGEN.EXE+111425) - 0x511425 ~ 0x511FFC = 3031 bytes
+
+[Character Loading EAX Def Path]
+  Stream.exe+35555 - 8D 44 24 10           - lea eax,[esp+10]
+  Stream.exe+35559 - 68 94694F00           - push Stream.exe+F6994 { (29810) }
+  Stream.exe+3555E - 50                    - push eax
+  Stream.exe+3555F - E8 6C110300           - call Stream.exe+666D0
+  Stream.exe+35564 - 8B F0                 - mov esi,eax
+  Stream.exe+35566 - 83 C4 08              - add esp,08 { 8 }
+  Stream.exe+35569 - 85 F6                 - test esi,esi
+  Stream.exe+3556B - 75 1B                 - jne Stream.exe+35588
+  Stream.exe+3556D - 55                    - push ebp
+  Stream.exe+3556E - 68 EC324F00           - push Stream.exe+F32EC { ("Can't open %s") }
+  
+[Step #1] Reroute from Loading DEF File to Custom Code Region
+  ~~~ Stream.exe+35555 - E9 C3 BE 0D 00           - jmp Stream.exe+11141D
+  --- EXE + 0x34955 == lea eax,[esp+10]
+  +++ EXE + 0x34955 == E9 C3 BE 0D 00
+  === STR + 0x35555 == E9 C3 BE 0D 00 - jmp Stream.exe+11141D
+
+[Step 2A] Assembly for Backup Registers, and XOR non-ESP Registers  
+  A1 E8405000           - mov eax,[mugen.exe+1040E8]
+  05 2C080000           - add eax,0000082C
+  89 18                 - mov [eax],ebx
+  89 48 04              - mov [eax+04],ecx
+  89 50 08              - mov [eax+08],edx
+  89 70 0C              - mov [eax+0C],esi
+  89 78 10              - mov [eax+10],edi
+  89 68 14              - mov [eax+14],ebp
+  89 60 18              - mov [eax+18],esp
+  31 DB                 - xor ebx,ebx
+  31 C9                 - xor ecx,ecx
+  31 D2                 - xor edx,edx
+  31 F6                 - xor esi,esi
+  31 FF                 - xor edi,edi
+  31 ED                 - xor ebp,ebp
+BYTES:
+  A1 E8 40 50 00 05 2C 08 00 00 89 18 89 48 04 89 50 08 89 70 0C 89 78 10 89 68 14 89 60 18 31 DB 31 C9 31 D2 31 F6 31 FF 31 ED
+
+[Step 2B] Implement ASM into EXE.
+  --- EXE + 0x10A41D == Padding START
+  A1 E8 40 50 00 05 2C 08 00 00 89 18 89 48 04 89 50 08 89 70 0C 89 78 10 89 68 14 89 60 18 31 DB 31 C9 31 D2 31 F6 31 FF 31 ED
+  NEXT EXE OFFSET: 0x10A447
+  
+[Step 3A] Copy Char Path to eax+848~~~
+EAX = Character Path (Stack)
+EBX = Location to Copy Path [5040E8]+0x848
+ECX = Pointer Value Conversion
+EDX = Last Found "/" for StreamELUA appending.
+
+  Stream.exe+111447 - 8D 44 24 10           - lea eax,[esp+10]
+  Stream.exe+11144B - 8B 1D E8405000        - mov ebx,[Stream.exe+1040E8]
+  Stream.exe+111451 - 81 C3 48080000        - add ebx,00000848
+    Stream.exe+111457 - 8B 08                 - mov ecx,[eax]
+    Stream.exe+111459 - 81 E1 FF000000        - and ecx,000000FF
+    Stream.exe+11145F - 83 F9 2F              - cmp ecx,2F
+    Stream.exe+111462 - 75 02                 - jne Stream.exe+111466
+      Stream.exe+111464 - 8B D3                 - mov edx,ebx
+    Stream.exe+111466 - 89 0B                 - mov [ebx],ecx
+    Stream.exe+111468 - 43                    - inc ebx
+    Stream.exe+111469 - 40                    - inc eax
+    Stream.exe+11146A - 83 F9 00              - cmp ecx,00
+    Stream.exe+11146D - 75 E8                 - jne Stream.exe+111457
+  Stream.exe+11146F - C6 03 00              - mov byte ptr [ebx],00
+
+
+BYTES:
+8D 44 24 10 8B 1D E8 40 50 00 81 C3 48 08 00 00 8B 08 81 E1 FF 00 00 00 83 F9 2F 75 02 8B D3 89 0B 43 40 83 F9 00 75 E8 C6 03 00
+  
+  
+[Step 3B] Implement ASM into EXE.
+  EXE OFFSET = 0x10A447  
+  8D 44 24 10 8B 1D E8 40 50 00 81 C3 48 08 00 00 8B 08 81 E1 FF 00 00 00 83 F9 2F 75 02 8B D3 89 0B 43 40 83 F9 00 75 E8 C6 03 00
+  NEXT EXE Offset 0x10A472
+  
+[Step 4A] Append StreamELUA to copied char path.
+  Stream.exe+111472 - 42                    - inc edx
+  Stream.exe+111473 - C7 02 53747265        - mov [edx],65727453
+  Stream.exe+111479 - C7 42 04 616D456C     - mov [edx+04],6C456D61
+  Stream.exe+111480 - C7 42 08 75610000     - mov [edx+08],00006175
+
+BYTES:
+42 C7 02 53 74 72 65 C7 42 04 61 6D 45 6C C7 42 08 75 61 00 00
+
+[Step 4B] Implement ASM into EXE.
+  EXE OFFSET = 0x10A472
+  42 C7 02 53 74 72 65 C7 42 04 61 6D 45 6C C7 42 08 75 61 00 00
+  NEXT EXE OFFSET: 10A487   
+
+[Step 5A] Load Lua File Function
+;;Push ESI ESP+0x0C?
+Stream.exe+111487 - 8B F4                 - mov esi,esp
+Stream.exe+111489 - 83 C6 0C              - add esi,0C
+;;StreamElua File Pointer
+Stream.exe+11148C - A1 E8405000           - mov eax,[Stream.exe+1040E8]
+Stream.exe+111491 - 05 48080000           - add eax,00000848
+;;Call (1040FC handled by function)
+Stream.exe+111496 - E8 05CAF1FF           - call Stream.exe+2DEA0
+
+BYTES
+8B F4 83 C6 0C A1 E8 40 50 00 05 48 08 00 00 E8 05 CA F1 FF
+  
+[Step 5B] Implement ASM into EXE.
+  EXE OFFSET = 0x10A487
+  8B F4 83 C6 0C A1 E8 40 50 00 05 48 08 00 00 E8 05 CA F1 FF
+  NEXT EXE OFFSET: 10A49B
+  
+[Step 6A] Restore Registers and resume normal character loading.  
+  Stream.exe+11149B - A1 E8405000           - mov eax,[Stream.exe+1040E8]
+  Stream.exe+1114A0 - 05 2C080000           - add eax,0000082C
+  Stream.exe+1114A5 - 8B 18                 - mov ebx,[eax]
+  Stream.exe+1114A7 - 8B 48 04              - mov ecx,[eax+04]
+  Stream.exe+1114AA - 8B 50 08              - mov edx,[eax+08]
+  Stream.exe+1114AD - 8B 70 0C              - mov esi,[eax+0C]
+  Stream.exe+1114B0 - 8B 78 10              - mov edi,[eax+10]
+  Stream.exe+1114B3 - 8B 68 14              - mov ebp,[eax+14]
+  Stream.exe+1114B6 - 8D 44 24 10           - lea eax,[esp+10]
+  Stream.exe+1114BA - 68 94694F00           - push Stream.exe+F6994
+  Stream.exe+1114BF - E9 9A40F2FF           - jmp Stream.exe+3555E
+
+BYTES:
+A1 E8 40 50 00 05 2C 08 00 00 8B 18 8B 48 04 8B 50 08 8B 70 0C 8B 78 10 8B 68 14 8D 44 24 10 68 94 69 4F 00 E9 9A 40 F2 FF
+
+[Step 5B] Implement ASM into EXE.
+  EXE OFFSET = 0x10A49B
+  A1 E8 40 50 00 05 2C 08 00 00 8B 18 8B 48 04 8B 50 08 8B 70 0C 8B 78 10 8B 68 14 8D 44 24 10 68 94 69 4F 00 E9 9A 40 F2 FF
+  NEXT EXE OFFSET: 10A4C4
+  
+  
+========DEBUG=======
+  
+
+[Level 2 Load Lua File]
+  Jump from mugen.exe+0x35555 to mugen.exe+0x111500
+  ?? Store EAX/Path and backup Register values for restoration?.
+  Push ESP +8 >>> 0x511XXX for jump>call return address control
+  Push ESP +4 >>> ELUA File Path (Pointer)
+  Push ESP +0 >>> lua_State pointer via [0x5040FC]
+  JMP to mugen.exe+C6250
+      
+[Calling LuaDoFile]  
+ Controlled return address will place us back in the 0x511XXX region.
+ Restore Register Values and normal character path (should still be esp+0x10?). 
+ >>> lea eax,[esp+10]
+ >>> push Stream.exe+F6994
+ >>> jmp Stream.exe+3555E  
+  
+[LuaFile Details]
+  Modified version of basic template
+  Does not request VirtualProtect on DLL as it is no longer required.
+  Does VirtualProtect mugen.exe still however. 
+  
+  
+  
+
