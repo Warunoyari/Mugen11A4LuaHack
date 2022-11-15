@@ -8,7 +8,7 @@ Put StreamElua, StreamElua2, and LoadLua11A4.bin in your character folder
 Copy/Paste or Merge Supernull with existing Supernull folders (This uses my edits with Label Pointers for ASM file editing)  
 **Must be same location as Def file (No guarantees if you place DEF file in weird location.)**  
 **The original elua file with pointers is included for reference**  
-*LoadLua11A4.asm and LuaDoFile are for source code thus not required.* 
+*LoadLua11A4.asm and LuaDoFile are for source code thus not required.*  
 *You are not required to load any files from the character def*  
 *It is strongly encouraged not to load supernull.st from old ROP while using this*  
 
