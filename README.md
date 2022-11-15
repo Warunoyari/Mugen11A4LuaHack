@@ -10,6 +10,7 @@ Must be same location as Def file (No guarantees if you place DEF file in weird 
 LoadLua11A4.asm is for source code and is not necessary.
 
 StreamElua sets up the code to run StreamElua2
+
 This file is for setting up the info pointer required to use LuaFile and also for custom code
 You are free to put custom code in the first file as well but it is not recommended.
 It is significantly easier to reference PalNo in File 2 context, for reference.
