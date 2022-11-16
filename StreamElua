@@ -181,6 +181,56 @@ function bootstrap()
   
 
 
+-- Here is where you can modify which DEF the game will load.
+-- Included palno detector, detecting names will require more effort depending on slot.
+-- PalNo [5040E8] Values (Value - 1) >> 12 == 11
+-- P1 = 0x50C0
+-- P2 = 0x6B9C
+-- P3 = 0x50D4
+-- P4 = 0x6BB0
+
+MyPal = -1;
+
+if (not player.indexisvalid(1)) then 
+    MyPal = mll.ReadInteger(mugen.getbaseaddress() + 0x50C0) + 1    
+elseif (not player.indexisvalid(2))
+  then 
+    MyPal = mll.ReadInteger(mugen.getbaseaddress() + 0x6B9C) + 1    
+elseif (not player.indexisvalid(3))
+  then
+    MyPal = mll.ReadInteger(mugen.getbaseaddress() + 0x50D4) + 1    
+else
+    MyPal = mll.ReadInteger(mugen.getbaseaddress() + 0x6BB0) + 1    
+end
+
+CurrentDefAddress = mll.ReadInteger(mugen.getbaseaddress() + 0xA7C)
+SavedDefAddress = CurrentDefAddress
+LastSlash = -1
+LastSlashAddress = -1
+PathAnalyzed = false
+
+while (PathAnalyzed == false)
+  do
+    CurrByte = mll.ReadByte(CurrentDefAddress)
+    if (CurrByte == 0x2F)
+      then
+        LastSlashAddress = CurrentDefAddress + 1
+      end
+    if (CurrByte == 0x00) then PathAnalyzed = true end
+    CurrentDefAddress = CurrentDefAddress + 1;
+  end
+
+--[[
+if (MyPal == 1) then mll.WriteString(LastSlashAddress, "01P.def")
+elseif (MyPal == 2) then mll.WriteString(LastSlashAddress, "02P.def")
+elseif (MyPal == 3) then mll.WriteString(LastSlashAddress, "03P.def")
+elseif (MyPal == 11) then mll.WriteString(LastSlashAddress, "11P.def")
+elseif (MyPal == 12) then mll.WriteString(LastSlashAddress, "12P.def")
+else mll.WriteString(LastSlashAddress, "04P.def") end
+--]]
+
+
+
 
 -- Setup Loading File 2
   StreamElua2Address = mll.MemoryMapFile(sourcefolder .. "LoadLua11A4.bin", 0x2000, 0x40)
@@ -188,6 +238,14 @@ function bootstrap()
   mll.WriteByte(0x004358CF, 0xE9)
   mll.WriteInteger(0x004358D0, JumpDistance)
   mugen.log("Finished first step\n\n")
+  
+  
+  
+  
+  
+  
+  
+  
   
 end
 
