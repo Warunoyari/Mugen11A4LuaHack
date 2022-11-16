@@ -19,4 +19,3 @@ StreamElua sets up the code to run StreamElua2
 This file is for setting up the character path from the info pointer required to use LuaFile  
 It is also the recommended place to put custom code  
 You are free to put custom code in the first file as well, though not recommended  
-It is significantly easier to reference PalNo in File 2 context, for reference.
