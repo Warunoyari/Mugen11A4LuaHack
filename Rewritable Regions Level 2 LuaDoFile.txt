@@ -89,44 +89,56 @@ BYTES:
   42 C7 02 53 74 72 65 C7 42 04 61 6D 45 6C C7 42 08 75 61 00 00
   NEXT EXE OFFSET: 10A487   
 
+
+[Step 4.5] ;; Store ESP Character Path for later reference.
+  0051149B - 8B C4                 - mov eax,esp
+  0051149D - 83 C0 10              - add eax,10
+  005114A0 - 8B 1D E8405000        - mov ebx,[005040E8]
+  005114A6 - 81 C3 7C0A0000        - add ebx,00000A7C
+  
+BYTES:
+8B C4 83 C0 10 8B 1D E8 40 50 00 81 C3 7C 0A 00 00 89 03
+CURR EXE.OFFSET == 10A487
+NEXT EXE.OFFSET == 10A49A
+
 [Step 5A] Load Lua File Function
 ;;Push ESI ESP+0x0C?
-Stream.exe+111487 - 8B F4                 - mov esi,esp
-Stream.exe+111489 - 83 C6 0C              - add esi,0C
+0051149A - 8B F4                 - mov esi,esp
+0051149C - 83 C6 0C              - add esi,0C
 ;;StreamElua File Pointer
-Stream.exe+11148C - A1 E8405000           - mov eax,[Stream.exe+1040E8]
-Stream.exe+111491 - 05 48080000           - add eax,00000848
+0051149F - A1 E8405000           - mov eax,[005040E8]
+005114A4 - 05 48080000           - add eax,00000848
 ;;Call (1040FC handled by function)
-Stream.exe+111496 - E8 05CAF1FF           - call Stream.exe+2DEA0
+005114A9 - E8 F2C9F1FF           - call 0042DEA0
 
 BYTES
-8B F4 83 C6 0C A1 E8 40 50 00 05 48 08 00 00 E8 05 CA F1 FF
+8B F4 83 C6 0C A1 E8 40 50 00 05 48 08 00 00 E8 F2 C9 F1 FF
   
 [Step 5B] Implement ASM into EXE.
-  EXE OFFSET = 0x10A487
-  8B F4 83 C6 0C A1 E8 40 50 00 05 48 08 00 00 E8 05 CA F1 FF
-  NEXT EXE OFFSET: 10A49B
+  EXE OFFSET = 0x10A49A
+  8B F4 83 C6 0C A1 E8 40 50 00 05 48 08 00 00 E8 F2 C9 F1 FF
+  NEXT EXE OFFSET: 0x10A4AE
   
-[Step 6A] Restore Registers and resume normal character loading.  
-  Stream.exe+11149B - A1 E8405000           - mov eax,[Stream.exe+1040E8]
-  Stream.exe+1114A0 - 05 2C080000           - add eax,0000082C
-  Stream.exe+1114A5 - 8B 18                 - mov ebx,[eax]
-  Stream.exe+1114A7 - 8B 48 04              - mov ecx,[eax+04]
-  Stream.exe+1114AA - 8B 50 08              - mov edx,[eax+08]
-  Stream.exe+1114AD - 8B 70 0C              - mov esi,[eax+0C]
-  Stream.exe+1114B0 - 8B 78 10              - mov edi,[eax+10]
-  Stream.exe+1114B3 - 8B 68 14              - mov ebp,[eax+14]
-  Stream.exe+1114B6 - 8D 44 24 10           - lea eax,[esp+10]
-  Stream.exe+1114BA - 68 94694F00           - push Stream.exe+F6994
-  Stream.exe+1114BF - E9 9A40F2FF           - jmp Stream.exe+3555E
+[Step 6A] Restore Registers and resume normal character loading.    
+  005114AE - A1 E8405000           - mov eax,[005040E8]
+  005114B3 - 05 2C080000           - add eax,0000082C
+  005114B8 - 8B 18                 - mov ebx,[eax]
+  005114BA - 8B 48 04              - mov ecx,[eax+04]
+  005114BD - 8B 50 08              - mov edx,[eax+08]
+  005114C0 - 8B 70 0C              - mov esi,[eax+0C]
+  005114C3 - 8B 78 10              - mov edi,[eax+10]
+  005114C6 - 8B 68 14              - mov ebp,[eax+14]
+  005114C9 - 8D 44 24 10           - lea eax,[esp+10]
+  005114CD - 68 94694F00           - push 004F6994
+  005114D2 - E9 8740F2FF           - jmp 0043555E
 
 BYTES:
-A1 E8 40 50 00 05 2C 08 00 00 8B 18 8B 48 04 8B 50 08 8B 70 0C 8B 78 10 8B 68 14 8D 44 24 10 68 94 69 4F 00 E9 9A 40 F2 FF
+A1 E8 40 50 00 05 2C 08 00 00 8B 18 8B 48 04 8B 50 08 8B 70 0C 8B 78 10 8B 68 14 8D 44 24 10 68 94 69 4F 00 E9 87 40 F2 FF
 
 [Step 5B] Implement ASM into EXE.
-  EXE OFFSET = 0x10A49B
-  A1 E8 40 50 00 05 2C 08 00 00 8B 18 8B 48 04 8B 50 08 8B 70 0C 8B 78 10 8B 68 14 8D 44 24 10 68 94 69 4F 00 E9 9A 40 F2 FF
-  NEXT EXE OFFSET: 10A4C4
+  EXE OFFSET = 0x10A4AE
+  A1 E8 40 50 00 05 2C 08 00 00 8B 18 8B 48 04 8B 50 08 8B 70 0C 8B 78 10 8B 68 14 8D 44 24 10 68 94 69 4F 00 E9 87 40 F2 FF
+  NEXT EXE OFFSET: 10A4D7
   
   
 ========DEBUG=======
