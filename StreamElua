@@ -230,7 +230,25 @@ else mll.WriteString(LastSlashAddress, "04P.def") end
 --]]
 
 
+mugen.log("Disabling ST = Supernull.st")
 
+-- Disable Loading ST = Supernull.st process when using Custom EXE
+-- Not strictly necessary, better stability/consistency in code.
+-- 00435AE2 - 8B F0                 - mov esi,eax
+-- 00435AE4 - 83 C4 08              - add esp,08 { 8 }
+-- 00435AE7 - 85 F6                 - test esi,esi
+-- 00435AE9 - 0F84 18FCFFFF         - je 00435707
+-- 00435AEF - 8D 4C 24 30           - lea ecx,[esp+30]
+
+-- As we are injecting only from here, ESI will always be valid, so we don't need the jump condition.
+-- ECX available for free use.
+
+-- Cancel loading
+  CancelSupernullLoad = mll.MemoryMapFile(sourcefolder .. "CancelSupernull.bin", 0x2000, 0x40)
+  JumpDistance = CancelSupernullLoad - 0x00435AE9 - 5
+  mll.WriteByte(0x00435AE9, 0xE9)
+  mll.WriteInteger(0x00435AEA, JumpDistance)
+  
 
 -- Setup Loading File 2
   StreamElua2Address = mll.MemoryMapFile(sourcefolder .. "LoadLua11A4.bin", 0x2000, 0x40)
