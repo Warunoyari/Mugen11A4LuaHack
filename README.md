@@ -12,8 +12,8 @@ Copy/Paste or Merge Supernull with existing Supernull folders (This uses my edit
 *You are not required to load any files from the character def*
 
 ### New
-Added a mechanism to load a dummy file (DEF<null>) when using custom exe
-This means you can now load St = supernull.st by default for maximum compatibility.
+Added a mechanism to load a dummy file (DEF<null>) when using custom exe  
+This means you can now load St = supernull.st by default for maximum compatibility.  
 Please keep in mind that you should keep the code in the normal Elua file and your StreamElua/2 file as similar as possible.
 
 ### Details  
